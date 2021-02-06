@@ -7,13 +7,11 @@ import pygame
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
 
-# TODO Добавить получение звезд
-# TODO 1 Сделать ввод Имени игрока - доделать надпись ВВеди имя
-# Todo 3 Добавить зелье для ускорения и замедления
-# Todo 4 Условие Победы
-# Todo 5 Добавить препятствия - если врезаешься, уменьшать змейку или геймовер
-# ToDo Разбить игру на файлы для удобства чтения
-# TODO Исправить чтение и сохранние рекордов в файл, в зашифрованном виде - защита от Читинга
+# Todo 1 Добавить зелье для ускорения и замедления
+# Todo 2 Условие Победы
+# Todo 3 Добавить препятствия - если врезаешься, уменьшать змейку или геймовер
+# ToDo 4 Разбить игру на файлы для удобства чтения
+# TODO 5 Исправить чтение и сохранние рекордов в файл, в зашифрованном виде - защита от Читинга
 
 
 # play.screen.width = 800
@@ -51,7 +49,7 @@ body_clone_list = []  # создаем список пустой, в котор�
 bodies_positions = []  # здесь будем хранить координаты каждого клона хвоста
 lines = []  # список линий - сетка
 borders = []  # список линий - границы, за которые выходить нельзя
-
+stars = []  # Список для отображения звезд
 
 #  Создаем алфавит словари для шифрования
 alf_dict_back = {'и': '0', 'Н': '1', 'С': '2', 'о': '3', 'р': '4', 't': '5', 'z': '6', 'h': '7', 'е': '8', ';': '9',
@@ -85,8 +83,6 @@ alf_dict = {'0': 'и', '1': 'Н', '2': 'С', '3': 'о', '4': 'р', '5': 't', '6'
             'Ч': 'Е', 'Ш': 'E', 'Щ': 'Щ', 'Ъ': 'х', 'Ы': 'Y', 'Ь': 'с', 'Э': 'ф', 'Ю': 'П', 'Я': 'У', '!': '=',
             '"': 'ч', "'": 'u', '№': 'я', ';': 'М', '%': 'у', ':': 'M', '?': 'C', '*': 'V', '(': 'Ё', ')': 'm',
             '_': ')', '+': '*', '-': 'э', '=': 'З'}
-
-
 
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
@@ -130,10 +126,10 @@ class InputBox:
         # Blit the rect.
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
-
 def input_text():
     clock = pygame.time.Clock()
-    input_box1 = InputBox(100, 100, 140, 32)
+    x, y = 250, 350
+    input_box1 = InputBox(x, y, 140, 32)
     done = False
 
     name = "Player"
@@ -147,18 +143,24 @@ def input_text():
         input_box1.update()
 
         screen.fill((30, 30, 30))
+
+        fontObj = pygame.font.Font('freesansbold.ttf', 40)
+        textSurfaceObj = fontObj.render('Введите имя:', True, "yellow", "blue")
+        textRectObj = textSurfaceObj.get_rect()
+        textRectObj.center = (300, 300)  # координаты х и у Надписи - начало в левом верхнем углу
+
+        screen.blit(textSurfaceObj, textRectObj)
+
         input_box1.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
     return name
 
-
 def apple_random():
     """ Эта функция (подпрограмма) для перемещения спрайта яблоко в случайное положение"""
     apple.x = play.random_number(lowest=-19, highest=19) * 20
     apple.y = play.random_number(lowest=-14, highest=13) * 20
-
 
 def borders_and_lines():
     for Y in range(-270, 270, 20):
@@ -183,13 +185,11 @@ def borders_and_lines():
     borders.append(line)
     all_sprites.append(line)
 
-
 def update_bodies_position():
     bodies_positions.clear()
     for index in range(0, len(body_clone_list)):
         position = body_clone_list[index].x, body_clone_list[index].y, body_clone_list[index].angle
         bodies_positions.append(position)
-
 
 def move_bodies_to_new_position():
     body_clone_list[0].go_to(head)
@@ -203,7 +203,7 @@ def move_bodies_to_new_position():
 
 def deshifr(string):
     str1 = []
-    for symbol in string:
+    for symbol in string[::-1]:
         if symbol in alf_dict_back:
             str1.append(alf_dict_back[symbol])  # заменяем зашифрованные символы
         else:
@@ -212,7 +212,7 @@ def deshifr(string):
 
 def shifr(string):
     str1 = []
-    for symbol in string:
+    for symbol in string[::-1]:
         if symbol in alf_dict:
             str1.append(alf_dict[symbol])  # заменяем на зашифрованные символы
         else:
@@ -284,7 +284,6 @@ def show_winners(winners):
                                 font=None, font_size=30, color='gold', transparency=100)
         list_winners.append(win)
 
-
 def show_hall_winners():
     global handle, your_score
     for sprite in all_sprites:
@@ -303,6 +302,13 @@ def game_over():
     finish.show()
     sound_game_over.play()
     return False
+
+def check_stars():
+    if apples % 10 == 0:
+        new_x = -200 + 30 * len(stars)  # Каждый раз когда получаем звезду смещаем ее вправо
+        star = play.new_image(image="star.png", x=new_x, y=285, size=2, angle=0)
+        stars.append(star)
+        all_sprites.append(star)
 
 player_name.words = input_text()  # вызываем ввод имени  # пекредаем имя текстовому спрайту
 
@@ -355,6 +361,7 @@ async def do():
     # Условие касания яблока
     if head.is_touching(apple):
         apples = apples + 1
+        check_stars()  # Проверяем нужно добавлять и показывать звезды
         score.words = str(apples)  # для отображения кол-ва съеденных яблок на экране
         body_clone = play.new_image(image="тело.png", x=0, y=0, size=20, angle=90)  # Создаем клон нашего хвоста
         body_clone_list.append(body_clone)  # Добавляем клон в список
