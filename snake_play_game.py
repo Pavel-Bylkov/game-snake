@@ -203,7 +203,7 @@ def move_bodies_to_new_position():
 
 def deshifr(string):
     str1 = []
-    for symbol in string[::-1]:
+    for symbol in string:
         if symbol in alf_dict_back:
             str1.append(alf_dict_back[symbol])  # заменяем зашифрованные символы
         else:
@@ -212,7 +212,7 @@ def deshifr(string):
 
 def shifr(string):
     str1 = []
-    for symbol in string[::-1]:
+    for symbol in string:
         if symbol in alf_dict:
             str1.append(alf_dict[symbol])  # заменяем на зашифрованные символы
         else:
@@ -225,16 +225,17 @@ def get_winners():
         file_win = open("winners.win", "r", encoding="utf-8")
         dict_winners = {}  # создаем словарь для расшифровки победителей из файла
         try:
-            for line in file_win:
-                string = deshifr(line)  # расшифровываем каждую строку файла
-                list_win = string.split(";")  # создаем список из имени и значения рекорда каждого победителя
-                dict_winners[list_win[0]] = int(list_win[1])  # записываем пары Имя победителя и его рекорд в словарь
+            text = file_win.read()
+            text = deshifr(text)  # расшифровываем файл
+            list_win = text.split(" ; ")  # создаем список из имени и значения рекорда каждого победителя
+            for win in list_win:
+                winer = win.split("_;_")
+                dict_winners[winer[0]] = int(winer[1])  # записываем пары Имя победителя и его рекорд в словарь
         except:
             print("Файл winners.win содержит ошибки")
             file_win.close()
             exit()
-        finally:
-            file_win.close()
+        file_win.close()
         return dict_winners
     except:
         print("file open error")
@@ -242,10 +243,10 @@ def get_winners():
 
 def save_winners(winners):
     file_win = open("winners.win", "w", encoding="utf-8")
+    string = ""
     for name in winners:
-        string = name + ";" + str(winners[name]) # достаем из словаря нужные значения и делаем из них строку
-        string = shifr(string) + "\n"  # зашифровываем каждую строку файла
-        file_win.write(string)
+        string += name + "_;_" + str(winners[name]) + " ; "# достаем из словаря нужные значения
+    file_win.write(shifr(string))
     file_win.close()
 
 def setWinner(winners):
