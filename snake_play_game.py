@@ -346,7 +346,8 @@ def pres_keys(key):
 
 @play.repeat_forever
 async def do():
-    global apples, head, speed, run, curent_speed, is_elecsir  # разрешаем редактировать глобальную переменную внутри функции
+    # разрешаем редактировать глобальную переменную внутри функции
+    global apples, head, speed, run, curent_speed, is_elecsir
 
     # Условие для перемещения хвоста
     if len(body_clone_list):
