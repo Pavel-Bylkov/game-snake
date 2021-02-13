@@ -19,6 +19,8 @@ import pygame
 head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
 
 apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
+elecsir_speed = play.new_image(image="green.png", x=0, y=0, size=3, angle=0)
+elecsir_slow = play.new_image(image="red.png", x=0, y=0, size=2, angle=0)
 score = play.new_text(words='', x=350, y=280, angle=0, font=None, font_size=45, color='white', transparency=100)
 player_name = play.new_text(words='', x=-350, y=280, angle=0, font=None, font_size=45, color='white', transparency=100)
 
@@ -42,47 +44,18 @@ COLOR_ACTIVE = pygame.Color('dodgerblue2')
 FONT = pygame.font.Font(None, 32)
 
 run = True  # для движения головы
-speed = 0.4
+STARTSPEED = 0.4
+speed = STARTSPEED
+is_elecsir = False
+show_eleksir = False
 apples = 0
-all_sprites = [head, apple, score, player_name, finish]
+all_sprites = [head, apple, score, player_name, finish, elecsir_speed, elecsir_slow]
 body_clone_list = []  # создаем список пустой, в который потом будем добавлять клоны хвоста
 bodies_positions = []  # здесь будем хранить координаты каждого клона хвоста
 lines = []  # список линий - сетка
 borders = []  # список линий - границы, за которые выходить нельзя
 stars = []  # Список для отображения звезд
 
-#  Создаем алфавит словари для шифрования
-alf_dict_back = {'и': '0', 'Н': '1', 'С': '2', 'о': '3', 'р': '4', 't': '5', 'z': '6', 'h': '7', 'е': '8', ';': '9',
-                 'з': 'a', 'А': 'b', 'п': 'c', 'ц': 'd', 'v': 'e', 's': 'f', 'p': 'g', '№': 'h', 'F': 'i', 'ы': 'j',
-                 'J': 'k', 'ю': 'l', 'ш': 'm', 'Х': 'n', 'l': 'o', 'ъ': 'p', 'Л': 'q', 'Ю': 'r', 'Ь': 's', 'й': 't',
-                 'i': 'u', '?': 'v', 'O': 'w', 'a': 'x', '0': 'y', '"': 'z', '_': 'A', 'в': 'B', '-': 'C', 'ж': 'D',
-                 'н': 'E', '4': 'F', 'Ъ': 'G', 'Ж': 'H', 'Д': 'I', 'A': 'J', 'И': 'K', 'W': 'L', 'д': 'M', 'g': 'N',
-                 '+': 'O', 'Ш': 'P', 'Ф': 'Q', 'P': 'R', 'R': 'S', 'Z': 'T', ':': 'U', 'b': 'V', 'w': 'W', 'c': 'X',
-                 'Ч': 'Y', 'S': 'Z', '%': ' ', 'n': 'а', 'ё': 'б', '5': 'в', 'м': 'г', 'К': 'д', 'B': 'е', 'L': 'ё',
-                 'О': 'ж', 'Б': 'з', '6': 'и', '!': 'й', 'f': 'к', 'I': 'л', 'N': 'м', 'Г': 'н', 'H': 'о', 'Р': 'п',
-                 ' ': 'р', 'y': 'с', 'U': 'т', 'D': 'у', 'ь': 'ф', '9': 'х', 'r': 'ц', 'e': 'ч', 'г': 'ш', '1': 'щ',
-                 'т': 'ъ', 'Я': 'ы', '7': 'ь', 'В': 'э', 'X': 'ю', 'б': 'я', 'Ц': 'А', 'o': 'Б', "'": 'В', 'Т': 'Г',
-                 '3': 'Д', 'j': 'Е', 'щ': 'Ё', '2': 'Ж', 'K': 'З', 'q': 'И', 'Э': 'Й', 'd': 'К', 'Q': 'Л', 'а': 'М',
-                 'x': 'Н', 'G': 'О', 'T': 'П', 'Ы': 'Р', '8': 'С', '(': 'Т', 'к': 'У', 'Й': 'Ф', 'л': 'Х', 'k': 'Ц',
-                 'Е': 'Ч', 'E': 'Ш', 'Щ': 'Щ', 'х': 'Ъ', 'Y': 'Ы', 'с': 'Ь', 'ф': 'Э', 'П': 'Ю', 'У': 'Я', '=': '!',
-                 'ч': '"', 'u': "'", 'я': '№', 'М': ';', 'у': '%', 'M': ':', 'C': '?', 'V': '*', 'Ё': '(', 'm': ')',
-                 ')': '_', '*': '+', 'э': '-', 'З': '='}
-
-alf_dict = {'0': 'и', '1': 'Н', '2': 'С', '3': 'о', '4': 'р', '5': 't', '6': 'z', '7': 'h', '8': 'е', '9': ';',
-            'a': 'з', 'b': 'А', 'c': 'п', 'd': 'ц', 'e': 'v', 'f': 's', 'g': 'p', 'h': '№', 'i': 'F', 'j': 'ы',
-            'k': 'J', 'l': 'ю', 'm': 'ш', 'n': 'Х', 'o': 'l', 'p': 'ъ', 'q': 'Л', 'r': 'Ю', 's': 'Ь', 't': 'й',
-            'u': 'i', 'v': '?', 'w': 'O', 'x': 'a', 'y': '0', 'z': '"', 'A': '_', 'B': 'в', 'C': '-', 'D': 'ж',
-            'E': 'н', 'F': '4', 'G': 'Ъ', 'H': 'Ж', 'I': 'Д', 'J': 'A', 'K': 'И', 'L': 'W', 'M': 'д', 'N': 'g',
-            'O': '+', 'P': 'Ш', 'Q': 'Ф', 'R': 'P', 'S': 'R', 'T': 'Z', 'U': ':', 'V': 'b', 'W': 'w', 'X': 'c',
-            'Y': 'Ч', 'Z': 'S', ' ': '%', 'а': 'n', 'б': 'ё', 'в': '5', 'г': 'м', 'д': 'К', 'е': 'B', 'ё': 'L',
-            'ж': 'О', 'з': 'Б', 'и': '6', 'й': '!', 'к': 'f', 'л': 'I', 'м': 'N', 'н': 'Г', 'о': 'H', 'п': 'Р',
-            'р': ' ', 'с': 'y', 'т': 'U', 'у': 'D', 'ф': 'ь', 'х': '9', 'ц': 'r', 'ч': 'e', 'ш': 'г', 'щ': '1',
-            'ъ': 'т', 'ы': 'Я', 'ь': '7', 'э': 'В', 'ю': 'X', 'я': 'б', 'А': 'Ц', 'Б': 'o', 'В': "'", 'Г': 'Т',
-            'Д': '3', 'Е': 'j', 'Ё': 'щ', 'Ж': '2', 'З': 'K', 'И': 'q', 'Й': 'Э', 'К': 'd', 'Л': 'Q', 'М': 'а',
-            'Н': 'x', 'О': 'G', 'П': 'T', 'Р': 'Ы', 'С': '8', 'Т': '(', 'У': 'к', 'Ф': 'Й', 'Х': 'л', 'Ц': 'k',
-            'Ч': 'Е', 'Ш': 'E', 'Щ': 'Щ', 'Ъ': 'х', 'Ы': 'Y', 'Ь': 'с', 'Э': 'ф', 'Ю': 'П', 'Я': 'У', '!': '=',
-            '"': 'ч', "'": 'u', '№': 'я', ';': 'М', '%': 'у', ':': 'M', '?': 'C', '*': 'V', '(': 'Ё', ')': 'm',
-            '_': ')', '+': '*', '-': 'э', '=': 'З'}
 
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
@@ -202,6 +175,22 @@ def move_bodies_to_new_position():
         body_clone_list[index].show()
 
 def deshifr(string):
+    #  Создаем алфавит словари для шифрования
+    alf_dict_back = {'и': '0', 'Н': '1', 'С': '2', 'о': '3', 'р': '4', 't': '5', 'z': '6', 'h': '7', 'е': '8', ';': '9',
+                     'з': 'a', 'А': 'b', 'п': 'c', 'ц': 'd', 'v': 'e', 's': 'f', 'p': 'g', '№': 'h', 'F': 'i', 'ы': 'j',
+                     'J': 'k', 'ю': 'l', 'ш': 'm', 'Х': 'n', 'l': 'o', 'ъ': 'p', 'Л': 'q', 'Ю': 'r', 'Ь': 's', 'й': 't',
+                     'i': 'u', '?': 'v', 'O': 'w', 'a': 'x', '0': 'y', '"': 'z', '_': 'A', 'в': 'B', '-': 'C', 'ж': 'D',
+                     'н': 'E', '4': 'F', 'Ъ': 'G', 'Ж': 'H', 'Д': 'I', 'A': 'J', 'И': 'K', 'W': 'L', 'д': 'M', 'g': 'N',
+                     '+': 'O', 'Ш': 'P', 'Ф': 'Q', 'P': 'R', 'R': 'S', 'Z': 'T', ':': 'U', 'b': 'V', 'w': 'W', 'c': 'X',
+                     'Ч': 'Y', 'S': 'Z', '%': ' ', 'n': 'а', 'ё': 'б', '5': 'в', 'м': 'г', 'К': 'д', 'B': 'е', 'L': 'ё',
+                     'О': 'ж', 'Б': 'з', '6': 'и', '!': 'й', 'f': 'к', 'I': 'л', 'N': 'м', 'Г': 'н', 'H': 'о', 'Р': 'п',
+                     ' ': 'р', 'y': 'с', 'U': 'т', 'D': 'у', 'ь': 'ф', '9': 'х', 'r': 'ц', 'e': 'ч', 'г': 'ш', '1': 'щ',
+                     'т': 'ъ', 'Я': 'ы', '7': 'ь', 'В': 'э', 'X': 'ю', 'б': 'я', 'Ц': 'А', 'o': 'Б', "'": 'В', 'Т': 'Г',
+                     '3': 'Д', 'j': 'Е', 'щ': 'Ё', '2': 'Ж', 'K': 'З', 'q': 'И', 'Э': 'Й', 'd': 'К', 'Q': 'Л', 'а': 'М',
+                     'x': 'Н', 'G': 'О', 'T': 'П', 'Ы': 'Р', '8': 'С', '(': 'Т', 'к': 'У', 'Й': 'Ф', 'л': 'Х', 'k': 'Ц',
+                     'Е': 'Ч', 'E': 'Ш', 'Щ': 'Щ', 'х': 'Ъ', 'Y': 'Ы', 'с': 'Ь', 'ф': 'Э', 'П': 'Ю', 'У': 'Я', '=': '!',
+                     'ч': '"', 'u': "'", 'я': '№', 'М': ';', 'у': '%', 'M': ':', 'C': '?', 'V': '*', 'Ё': '(', 'm': ')',
+                     ')': '_', '*': '+', 'э': '-', 'З': '='}
     str1 = []
     for symbol in string:
         if symbol in alf_dict_back:
@@ -211,6 +200,21 @@ def deshifr(string):
     return "".join(str1)
 
 def shifr(string):
+    alf_dict = {'0': 'и', '1': 'Н', '2': 'С', '3': 'о', '4': 'р', '5': 't', '6': 'z', '7': 'h', '8': 'е', '9': ';',
+                'a': 'з', 'b': 'А', 'c': 'п', 'd': 'ц', 'e': 'v', 'f': 's', 'g': 'p', 'h': '№', 'i': 'F', 'j': 'ы',
+                'k': 'J', 'l': 'ю', 'm': 'ш', 'n': 'Х', 'o': 'l', 'p': 'ъ', 'q': 'Л', 'r': 'Ю', 's': 'Ь', 't': 'й',
+                'u': 'i', 'v': '?', 'w': 'O', 'x': 'a', 'y': '0', 'z': '"', 'A': '_', 'B': 'в', 'C': '-', 'D': 'ж',
+                'E': 'н', 'F': '4', 'G': 'Ъ', 'H': 'Ж', 'I': 'Д', 'J': 'A', 'K': 'И', 'L': 'W', 'M': 'д', 'N': 'g',
+                'O': '+', 'P': 'Ш', 'Q': 'Ф', 'R': 'P', 'S': 'R', 'T': 'Z', 'U': ':', 'V': 'b', 'W': 'w', 'X': 'c',
+                'Y': 'Ч', 'Z': 'S', ' ': '%', 'а': 'n', 'б': 'ё', 'в': '5', 'г': 'м', 'д': 'К', 'е': 'B', 'ё': 'L',
+                'ж': 'О', 'з': 'Б', 'и': '6', 'й': '!', 'к': 'f', 'л': 'I', 'м': 'N', 'н': 'Г', 'о': 'H', 'п': 'Р',
+                'р': ' ', 'с': 'y', 'т': 'U', 'у': 'D', 'ф': 'ь', 'х': '9', 'ц': 'r', 'ч': 'e', 'ш': 'г', 'щ': '1',
+                'ъ': 'т', 'ы': 'Я', 'ь': '7', 'э': 'В', 'ю': 'X', 'я': 'б', 'А': 'Ц', 'Б': 'o', 'В': "'", 'Г': 'Т',
+                'Д': '3', 'Е': 'j', 'Ё': 'щ', 'Ж': '2', 'З': 'K', 'И': 'q', 'Й': 'Э', 'К': 'd', 'Л': 'Q', 'М': 'а',
+                'Н': 'x', 'О': 'G', 'П': 'T', 'Р': 'Ы', 'С': '8', 'Т': '(', 'У': 'к', 'Ф': 'Й', 'Х': 'л', 'Ц': 'k',
+                'Ч': 'Е', 'Ш': 'E', 'Щ': 'Щ', 'Ъ': 'х', 'Ы': 'Y', 'Ь': 'с', 'Э': 'ф', 'Ю': 'П', 'Я': 'У', '!': '=',
+                '"': 'ч', "'": 'u', '№': 'я', ';': 'М', '%': 'у', ':': 'M', '?': 'C', '*': 'V', '(': 'Ё', ')': 'm',
+                '_': ')', '+': '*', '-': 'э', '=': 'З'}
     str1 = []
     for symbol in string:
         if symbol in alf_dict:
@@ -226,7 +230,7 @@ def get_winners():
         dict_winners = {}  # создаем словарь для расшифровки победителей из файла
         try:
             text = file_win.read()
-            text = deshifr(text)  # расшифровываем файл
+            text = deshifr(text)[:-3]  # расшифровываем файл
             list_win = text.split(" ; ")  # создаем список из имени и значения рекорда каждого победителя
             for win in list_win:
                 winer = win.split("_;_")
@@ -278,10 +282,10 @@ def show_winners(winners):
     sorted_winners = sorted_winners[::-1]
     for i in range(1, 11):
         if i - 1 < len(sorted_winners):
-            win = play.new_text(words=f'{i:2} {sorted_winners[i - 1][0].ljust(30,"_")} {sorted_winners[i - 1][1]:4}', x=-100,
-                                y=140 - i * 30, angle=0, font=None, font_size=30, color='gold', transparency=100)
+            win = play.new_text(words=f'{i:02} {sorted_winners[i - 1][0].ljust(30,".")} {sorted_winners[i - 1][1]:04}',
+                            x=-100, y=140 - i * 30, angle=0, font=None, font_size=30, color='gold', transparency=100)
         else:
-            win = play.new_text(words=f'{i:2} {"_"*30} {"_"*4}', x=-100, y=140 - i * 30, angle=0,
+            win = play.new_text(words=f'{i:02} {" "*30} {" "*4}', x=-100, y=140 - i * 30, angle=0,
                                 font=None, font_size=30, color='gold', transparency=100)
         list_winners.append(win)
 
@@ -316,12 +320,15 @@ player_name.words = input_text()  # вызываем ввод имени  # пе
 
 @play.when_program_starts
 def start():
+    finish.hide()
+    elecsir_speed.hide()
+    elecsir_slow.hide()
     borders_and_lines()  # вызываем подпрограмму для отрисовки линий и рамки
     head.angle = 0
     score.words = str(apples)
     apple_random()
     play.set_backdrop(color_or_image_name='black')
-    finish.hide()
+
     # gameover.hide()
 
 
@@ -339,7 +346,7 @@ def pres_keys(key):
 
 @play.repeat_forever
 async def do():
-    global apples, head, speed, run  # разрешаем редактировать глобальную переменную внутри функции
+    global apples, head, speed, run, curent_speed, is_elecsir  # разрешаем редактировать глобальную переменную внутри функции
 
     # Условие для перемещения хвоста
     if len(body_clone_list):
@@ -373,6 +380,23 @@ async def do():
         # ускорение движения змейки
         speed -= 0.001
 
+    # Условие касания элексира
+    if show_eleksir and head.is_touching(elecsir_slow):
+        is_elecsir = True
+        elecsir_slow.hide()
+        sound_eat.play()
+        # Замедление движения змейки
+        curent_speed = speed
+        speed += 0.1
+
+    if show_eleksir and head.is_touching(elecsir_speed):
+        elecsir_speed.hide()
+        is_elecsir = True
+        sound_eat.play()
+        # ускорение движения змейки
+        curent_speed = speed
+        speed -= 0.1
+
     # Условие Проигрыша - касания хвоста
     for body_clone in body_clone_list:
         if head.is_touching(body_clone):
@@ -393,5 +417,29 @@ async def music_play():
     pygame.mixer.music.play()
     await play.timer(seconds=194)
 
+@play.repeat_forever
+async def return_speed():
+    global speed, curent_speed, is_elecsir
+    if is_elecsir:
+        is_elecsir = False
+        await play.timer(seconds=10)
+        speed = curent_speed
+
+
+@play.repeat_forever
+async def surprize():
+    global show_eleksir
+    if play.random_number(lowest=0, highest=1) > 0:
+        temp = elecsir_speed
+    else:
+        temp = elecsir_slow
+    temp.x = play.random_number(lowest=-19, highest=19) * 20
+    temp.y = play.random_number(lowest=-14, highest=13) * 20
+    temp.show()
+    show_eleksir = True
+    await play.timer(seconds=10)
+    temp.hide()
+    show_eleksir = False
+    await play.timer(seconds=5)
 
 play.start_program()
