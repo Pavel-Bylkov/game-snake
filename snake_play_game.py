@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import sys
+
 import play
 import pygame
 
@@ -238,7 +240,7 @@ def get_winners():
         except:
             print("Файл winners.win содержит ошибки")
             file_win.close()
-            exit()
+            sys.exit(0)
         file_win.close()
         return dict_winners
     except:
@@ -364,7 +366,7 @@ async def do():
         await play.timer(seconds=2)
         show_hall_winners()
         await play.timer(seconds=5)
-        exit()
+        sys.exit(0)
 
 
     # Условие касания яблока
@@ -405,7 +407,7 @@ async def do():
             await play.timer(seconds=2)
             show_hall_winners()
             await play.timer(seconds=5)
-            exit()
+            sys.exit(0)
 
 
     # пауза между шагами - для создания эффекта сокрости
