@@ -19,8 +19,8 @@ from shifrovka import shifr, deshifr
 
 head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
 apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
-elecsir_speed = play.new_image(image="green.png", x=0, y=0, size=3, angle=0)
-elecsir_slow = play.new_image(image="red.png", x=0, y=0, size=2, angle=0)
+elecsir_speed = play.new_image(image="green.png", x=400, y=400, size=3, angle=0)
+elecsir_slow = play.new_image(image="red.png", x=400, y=400, size=2, angle=0)
 score = play.new_text(
     words='',
     x=350,
@@ -335,6 +335,7 @@ def start():
     gameover_pic.hide()
     end_text.hide()
     elecsir_speed.hide()
+    box.hide()
     elecsir_slow.hide()
     borders_and_lines()  # вызываем подпрограмму для отрисовки линий и рамки
     head.angle = 0
