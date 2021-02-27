@@ -3,21 +3,21 @@
 import sys
 import play
 
-from config import *
+from input_name import *  # вместе с config
+
 from shifrovka import shifr, deshifr
 
 # https://github.com/replit/play  - описание библиотеки Play
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
 
-# Todo 1 Условие Победы
-# Todo 2 Добавить препятствия - если врезаешься, уменьшать змейку или геймовер
+# Todo 2 Добавить препятствия - если врезаешься, уменьшать змейку
+# Сделать чтобы их было много, через какое то время чтобы меняли положение
 # ToDo 3 Разбить игру на файлы для удобства чтения
 # TODO 4 Исправить чтение и сохранние рекордов в файл, в зашифрованном
 # # виде - защита от Читинга
 
 head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
-
 apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
 elecsir_speed = play.new_image(image="green.png", x=0, y=0, size=3, angle=0)
 elecsir_slow = play.new_image(image="red.png", x=0, y=0, size=2, angle=0)
@@ -39,101 +39,44 @@ player_name = play.new_text(
     font_size=45,
     color='white',
     transparency=100)
+box = play.new_box(
+        color='orange',
+        x=0,
+        y=0,
+        width=18,
+        height=18,
+        border_color="light blue",
+        border_width=1)
 
-finish = play.new_image(image="gameover.jpeg", x=0, y=0, size=120, angle=0)
-# gameover = play.new_text(words='GAME OVER', x=0, y=0, angle=0, font=None,
-# font_size=180, color='green', transparency=100)
+gameover_pic = play.new_image(image="gameover.jpeg", x=0, y=0, size=120, angle=0)
+end_text = play.new_text(words='YOU WIN', x=0, y=0, angle=0, font=None,
+                        font_size=180, color='green', transparency=100)
 
 all_sprites = [
     head,
     apple,
     score,
+    box,
+    end_text,
     player_name,
-    finish,
+    gameover_pic,
     elecsir_speed,
     elecsir_slow]
 
 
-class InputBox:
-    def __init__(self, x, y, w, h, text=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.color = COLOR_INACTIVE
-        self.text = text
-        self.txt_surface = FONT.render(text, True, self.color)
-        self.active = False
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
-            if self.rect.collidepoint(event.pos):
-                # Toggle the active variable.
-                self.active = not self.active
-            else:
-                self.active = False
-            # Change the current color of the input box.
-            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
-        if event.type == pygame.KEYDOWN:
-            if self.active:
-                if event.key == pygame.K_RETURN:
-                    name = self.text if self.text != "" else "Player"  # - стандартное имя
-                    return True, name
-                elif event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-                # Re-render the text.
-                self.txt_surface = FONT.render(self.text, True, self.color)
-        return False, "Player"
-
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width() + 10)
-        self.rect.w = width
-
-    def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
-        # Blit the rect.
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-
-
-def input_text():
-    clock = pygame.time.Clock()
-    x, y = 250, 350
-    input_box1 = InputBox(x, y, 140, 32)
-    done = False
-
-    name = "Player"
-    while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-            else:
-                done, name = input_box1.handle_event(event)
-
-        input_box1.update()
-
-        screen.fill((30, 30, 30))
-
-        fontObj = pygame.font.Font('freesansbold.ttf', 40)
-        textSurfaceObj = fontObj.render('Введите имя:', True, "yellow", "blue")
-        textRectObj = textSurfaceObj.get_rect()
-        # координаты х и у Надписи - начало в левом верхнем углу
-        textRectObj.center = (300, 300)
-
-        screen.blit(textSurfaceObj, textRectObj)
-
-        input_box1.draw(screen)
-
-        pygame.display.flip()
-        clock.tick(30)
-    return name
-
-
-def apple_random():
+def sprite_pos_random(sprite):
     """ Эта функция (подпрограмма) для перемещения спрайта яблоко в случайное положение"""
-    apple.x = play.random_number(lowest=-19, highest=19) * 20
-    apple.y = play.random_number(lowest=-14, highest=13) * 20
+    flag = True
+    while flag:
+        x = play.random_number(lowest=-19, highest=19) * 20
+        y = play.random_number(lowest=-14, highest=13) * 20
+        for index in range(0, len(all_sprites)):
+            if all_sprites[index].x == x and all_sprites[index].y == y:
+                break
+        else:
+            flag = False
+    sprite.x = x
+    sprite.y = y
 
 
 def borders_and_lines():
@@ -357,13 +300,13 @@ def show_hall_winners():
 
 def game_over():
     pygame.mixer.music.stop()
-    finish.show()
+    gameover_pic.show()
     sound_game_over.play()
     return False
 
 
 def check_stars():
-    if apples % 10 == 0:
+    if apples % 1 == 0:
         # Каждый раз когда получаем звезду смещаем ее вправо
         new_x = -200 + 30 * len(stars)
         star = play.new_image(
@@ -376,22 +319,28 @@ def check_stars():
         all_sprites.append(star)
 
 
+def end_game():
+    pygame.mixer.music.stop()
+    end_text.show()
+    sound_game_over.play()
+    return False
+
+
 # вызываем ввод имени  # пекредаем имя текстовому спрайту
 player_name.words = input_text()
 
 
 @play.when_program_starts
 def start():
-    finish.hide()
+    gameover_pic.hide()
+    end_text.hide()
     elecsir_speed.hide()
     elecsir_slow.hide()
     borders_and_lines()  # вызываем подпрограмму для отрисовки линий и рамки
     head.angle = 0
     score.words = str(apples)
-    apple_random()
+    sprite_pos_random(apple)
     play.set_backdrop(color_or_image_name='black')
-
-    # gameover.hide()
 
 
 @play.when_key_pressed('up', 'down', 'right', 'left', 'w', 's', 'a', 'd')
@@ -426,7 +375,15 @@ async def do():
         run = game_over()
         await play.timer(seconds=2)
         show_hall_winners()
-        await play.timer(seconds=5)
+        await play.timer(seconds=10)
+        sys.exit(0)
+
+    # Условие Победы
+    if len(stars) == 10:
+        run = end_game()
+        await play.timer(seconds=3)
+        show_hall_winners()
+        await play.timer(seconds=10)
         sys.exit(0)
 
     # Условие касания яблока
@@ -444,7 +401,7 @@ async def do():
         body_clone_list.append(body_clone)  # Добавляем клон в список
         all_sprites.append(body_clone)
         body_clone.hide()
-        apple_random()
+        sprite_pos_random(apple)
         sound_eat.play()
         # ускорение движения змейки
         speed -= 0.001
@@ -474,7 +431,7 @@ async def do():
             run = game_over()
             await play.timer(seconds=2)
             show_hall_winners()
-            await play.timer(seconds=5)
+            await play.timer(seconds=10)
             sys.exit(0)
 
     # пауза между шагами - для создания эффекта сокрости
@@ -506,8 +463,7 @@ async def surprize():
         temp = elecsir_speed
     else:
         temp = elecsir_slow
-    temp.x = play.random_number(lowest=-19, highest=19) * 20
-    temp.y = play.random_number(lowest=-14, highest=13) * 20
+    sprite_pos_random(temp)
     temp.show()
     show_eleksir = True
     await play.timer(seconds=10)
