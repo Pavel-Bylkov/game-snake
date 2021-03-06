@@ -3,6 +3,8 @@
 import sys
 import play
 
+from random import choice
+
 from input_name import *  # вместе с config
 
 from shifrovka import shifr, deshifr
@@ -11,7 +13,7 @@ from shifrovka import shifr, deshifr
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
 
-# Todo 2 Добавить препятствия - если врезаешься, уменьшать змейку
+# Todo 2 Добавить препятствия
 # Сделать чтобы их было много, через какое то время чтобы меняли положение
 # ToDo 3 Разбить игру на файлы для удобства чтения
 # TODO 4 Исправить чтение и сохранние рекордов в файл, в зашифрованном
@@ -19,8 +21,14 @@ from shifrovka import shifr, deshifr
 
 head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
 apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
-elecsir_speed = play.new_image(image="green.png", x=400, y=400, size=3, angle=0)
-elecsir_slow = play.new_image(image="red.png", x=400, y=400, size=2, angle=0)
+elecsir_speed = play.new_box(color='light green',
+            x=0, y=0, width=18, height=18,
+            border_color="light blue",
+            border_width=1)
+elecsir_slow = play.new_box(color='red',
+            x=0, y=0, width=18, height=18,
+            border_color="light blue",
+            border_width=1)
 score = play.new_text(
     words='',
     x=350,
@@ -39,14 +47,7 @@ player_name = play.new_text(
     font_size=45,
     color='white',
     transparency=100)
-box = play.new_box(
-        color='orange',
-        x=0,
-        y=0,
-        width=18,
-        height=18,
-        border_color="light blue",
-        border_width=1)
+
 
 gameover_pic = play.new_image(image="gameover.jpeg", x=0, y=0, size=120, angle=0)
 end_text = play.new_text(words='YOU WIN', x=0, y=0, angle=0, font=None,
@@ -56,7 +57,6 @@ all_sprites = [
     head,
     apple,
     score,
-    box,
     end_text,
     player_name,
     gameover_pic,
@@ -77,6 +77,17 @@ def sprite_pos_random(sprite):
             flag = False
     sprite.x = x
     sprite.y = y
+
+
+def add_boxes(number):
+    for n in range(number):
+        box = play.new_box(color='orange',
+            x=0, y=0, width=18, height=18,
+            border_color="light blue",
+            border_width=1)
+        sprite_pos_random(box)
+        box_list.append(box)
+        all_sprites.append(box)
 
 
 def borders_and_lines():
@@ -150,6 +161,23 @@ def borders_and_lines():
     borders.append(line)
     all_sprites.append(line)
 
+def remove_from_body():
+    if body_clone_list:
+        body = body_clone_list.pop()
+        all_sprites.remove(body)
+        body = None
+
+def add_body_clone():
+    body_clone = play.new_image(
+        image="тело.png",
+        x=0,
+        y=0,
+        size=20,
+        angle=90)  # Создаем клон нашего хвоста
+    body_clone_list.append(body_clone)  # Добавляем клон в список
+    all_sprites.append(body_clone)
+    body_clone.hide()
+    body_clone = None
 
 def update_bodies_position():
     bodies_positions.clear()
@@ -335,13 +363,13 @@ def start():
     gameover_pic.hide()
     end_text.hide()
     elecsir_speed.hide()
-    box.hide()
     elecsir_slow.hide()
     borders_and_lines()  # вызываем подпрограмму для отрисовки линий и рамки
     head.angle = 0
     score.words = str(apples)
     sprite_pos_random(apple)
     play.set_backdrop(color_or_image_name='black')
+    add_boxes(5)
 
 
 @play.when_key_pressed('up', 'down', 'right', 'left', 'w', 's', 'a', 'd')
@@ -393,17 +421,9 @@ async def do():
         check_stars()  # Проверяем нужно добавлять и показывать звезды
         # для отображения кол-ва съеденных яблок на экране
         score.words = str(apples)
-        body_clone = play.new_image(
-            image="тело.png",
-            x=0,
-            y=0,
-            size=20,
-            angle=90)  # Создаем клон нашего хвоста
-        body_clone_list.append(body_clone)  # Добавляем клон в список
-        all_sprites.append(body_clone)
-        body_clone.hide()
         sprite_pos_random(apple)
         sound_eat.play()
+        add_body_clone()
         # ускорение движения змейки
         speed -= 0.001
 
@@ -434,6 +454,22 @@ async def do():
             show_hall_winners()
             await play.timer(seconds=10)
             sys.exit(0)
+
+    # Условие касания boxes
+    for box in box_list:
+        # проверяем касание и длину хвоста - если его нет, Поражение
+        if head.is_touching(box) and len(body_clone_list) == 0:
+            run = game_over()
+            await play.timer(seconds=2)
+            show_hall_winners()
+            await play.timer(seconds=10)
+            sys.exit(0)
+        if head.is_touching(box):
+            apples = apples - 1
+            score.words = str(apples)
+            sound_eat.play()
+            remove_from_body()
+            sprite_pos_random(box)
 
     # пауза между шагами - для создания эффекта сокрости
     await play.timer(seconds=speed)
@@ -467,7 +503,12 @@ async def surprize():
     sprite_pos_random(temp)
     temp.show()
     show_eleksir = True
-    await play.timer(seconds=10)
+    await play.timer(seconds=8)
+
+    # случайное место препятствия
+    box = choice(box_list)
+    sprite_pos_random(box)
+
     temp.hide()
     temp.go_to(400, 400)
     show_eleksir = False
