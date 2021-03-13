@@ -9,18 +9,17 @@ from input_name import *  # вместе с config
 
 from shifrovka import shifr, deshifr
 
+
 # https://github.com/replit/play  - описание библиотеки Play
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
-
-# Todo 2 Добавить препятствия
-# Сделать чтобы их было много, через какое то время чтобы меняли положение
+# ToDo Сделать стартовую страничку с описанием предметов и правил
+# Todo Исправить баг остаток хвоста от препятствия
 # ToDo 3 Разбить игру на файлы для удобства чтения
-# TODO 4 Исправить чтение и сохранние рекордов в файл, в зашифрованном
-# # виде - защита от Читинга
+# Todo Найти решение переключиться на полный экран
+
 
 head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
-apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
 elecsir_speed = play.new_box(color='light green',
             x=0, y=0, width=18, height=18,
             border_color="light blue",
@@ -55,13 +54,17 @@ end_text = play.new_text(words='YOU WIN', x=0, y=0, angle=0, font=None,
 
 all_sprites = [
     head,
-    apple,
     score,
     end_text,
     player_name,
     gameover_pic,
     elecsir_speed,
     elecsir_slow]
+
+
+def start_rules():
+    from os import system
+    system("gedit Rules.txt")
 
 
 def sprite_pos_random(sprite):
@@ -89,6 +92,12 @@ def add_boxes(number):
         box_list.append(box)
         all_sprites.append(box)
 
+def add_apples(number):
+    for n in range(number):
+        apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
+        sprite_pos_random(apple)
+        apples_lst.append(apple)
+        all_sprites.append(apple)
 
 def borders_and_lines():
     for Y in range(-270, 270, 20):
@@ -367,13 +376,17 @@ def start():
     borders_and_lines()  # вызываем подпрограмму для отрисовки линий и рамки
     head.angle = 0
     score.words = str(apples)
-    sprite_pos_random(apple)
+    add_apples(3)
     play.set_backdrop(color_or_image_name='black')
     add_boxes(5)
+    start_rules()
 
 
-@play.when_key_pressed('up', 'down', 'right', 'left', 'w', 's', 'a', 'd')
-def pres_keys(key):
+@play.when_key_pressed('up', 'down', 'right', 'left', 'w', 's', 'a', 'd', 'p', 'h')
+async def pres_keys(key):
+    def start_rules():
+        from os import system
+        system("gedit Rules.txt")
     if key == 'up' or key == 'w':
         head.angle = 90
     if key == 'down' or key == 's':
@@ -382,6 +395,11 @@ def pres_keys(key):
         head.angle = 0
     if key == 'left' or key == 'a':
         head.angle = 180
+    if key == 'p':
+        switch_screen()
+    if key == 'h':
+        start_rules()
+    await play.timer(seconds=0.01)
 
 
 @play.repeat_forever
@@ -416,16 +434,17 @@ async def do():
         sys.exit(0)
 
     # Условие касания яблока
-    if head.is_touching(apple):
-        apples = apples + 1
-        check_stars()  # Проверяем нужно добавлять и показывать звезды
-        # для отображения кол-ва съеденных яблок на экране
-        score.words = str(apples)
-        sprite_pos_random(apple)
-        sound_eat.play()
-        add_body_clone()
-        # ускорение движения змейки
-        speed -= 0.001
+    for apple in apples_lst:
+        if head.is_touching(apple):
+            apples = apples + 1
+            check_stars()  # Проверяем нужно добавлять и показывать звезды
+            # для отображения кол-ва съеденных яблок на экране
+            score.words = str(apples)
+            sprite_pos_random(apple)
+            sound_eat.play()
+            add_body_clone()
+            # ускорение движения змейки
+            speed -= 0.001
 
     # Условие касания элексира
     if show_eleksir and head.is_touching(elecsir_slow):
@@ -435,7 +454,7 @@ async def do():
         sound_eat.play()
         # Замедление движения змейки
         curent_speed = speed
-        speed += 0.1
+        speed += 0.2
 
     if show_eleksir and head.is_touching(elecsir_speed):
         show_eleksir = False
@@ -444,7 +463,7 @@ async def do():
         sound_eat.play()
         # ускорение движения змейки
         curent_speed = speed
-        speed -= 0.1
+        speed -= 0.2
 
     # Условие Проигрыша - касания хвоста
     for body_clone in body_clone_list:
@@ -503,7 +522,7 @@ async def surprize():
     sprite_pos_random(temp)
     temp.show()
     show_eleksir = True
-    await play.timer(seconds=8)
+    await play.timer(seconds=20)
 
     # случайное место препятствия
     box = choice(box_list)
@@ -512,6 +531,6 @@ async def surprize():
     temp.hide()
     temp.go_to(400, 400)
     show_eleksir = False
-    await play.timer(seconds=5)
+    await play.timer(seconds=10)
 
 play.start_program()
