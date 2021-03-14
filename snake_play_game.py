@@ -102,20 +102,13 @@ def add_apples(number):
 def borders_and_lines():
     for Y in range(-270, 270, 20):
         line = play.new_line(
-            color='lightgreen',
-            x=-390,
-            y=Y,
-            length=780,
-            angle=0,
-            thickness=1,
-            x1=None,
-            y1=None)
+            color='lightgreen', x=-390, y=Y, length=780, angle=0, thickness=1,
+            x1=None, y1=None)
         all_sprites.append(line)
         lines.append(line)
     for X in range(-370, 390, 20):
         line = play.new_line(
-            color='lightgreen',
-            x=X,
+            color='lightgreen', x=X,
             y=270,
             length=560,
             angle=-90,
@@ -148,25 +141,13 @@ def borders_and_lines():
     borders.append(line)
     all_sprites.append(line)
     line = play.new_line(
-        color='red',
-        x=LEFT_BRD,
-        y=UP_BRD,
-        length=780,
-        angle=0,
-        thickness=1,
-        x1=None,
-        y1=None)
+        color='red', x=LEFT_BRD, y=UP_BRD, length=780, angle=0, thickness=1,
+        x1=None, y1=None)
     borders.append(line)
     all_sprites.append(line)
     line = play.new_line(
-        color='red',
-        x=LEFT_BRD,
-        y=DOWN_BRD,
-        length=780,
-        angle=0,
-        thickness=1,
-        x1=None,
-        y1=None)
+        color='red', x=LEFT_BRD, y=DOWN_BRD, length=780, angle=0, thickness=1,
+        x1=None, y1=None)
     borders.append(line)
     all_sprites.append(line)
 
@@ -174,15 +155,12 @@ def remove_from_body():
     if body_clone_list:
         body = body_clone_list.pop()
         all_sprites.remove(body)
+        body.remove()
         body = None
 
 def add_body_clone():
     body_clone = play.new_image(
-        image="тело.png",
-        x=0,
-        y=0,
-        size=20,
-        angle=90)  # Создаем клон нашего хвоста
+        image="тело.png", x=0, y=0, size=20, angle=90)  # Создаем клон нашего хвоста
     body_clone_list.append(body_clone)  # Добавляем клон в список
     all_sprites.append(body_clone)
     body_clone.hide()
