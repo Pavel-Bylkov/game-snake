@@ -13,34 +13,32 @@ from shifrovka import shifr, deshifr
 # https://github.com/replit/play  - описание библиотеки Play
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
-# ToDo Сделать стартовую страничку с описанием предметов и правил
-# Todo Исправить баг остаток хвоста от препятствия
 # ToDo 3 Разбить игру на файлы для удобства чтения
 # Todo Найти решение переключиться на полный экран
 
 
-head = play.new_image(image="голова.png", x=0, y=0, size=10, angle=90)
+head = play.new_image(image="голова.png", x=0, y=0, size=25, angle=90)
 elecsir_speed = play.new_box(color='light green',
-            x=0, y=0, width=18, height=18,
+            x=0, y=0, width=SIZE - 2, height=SIZE - 2,
             border_color="light blue",
             border_width=1)
 elecsir_slow = play.new_box(color='red',
-            x=0, y=0, width=18, height=18,
+            x=0, y=0, width=SIZE - 2, height=SIZE - 2,
             border_color="light blue",
             border_width=1)
 score = play.new_text(
     words='',
-    x=350,
-    y=280,
+    x=RIGHT_BRD - 100,
+    y=UP_BRD + SIZE //2,
     angle=0,
     font=None,
-    font_size=45,
+    font_size=50,
     color='white',
     transparency=100)
 player_name = play.new_text(
     words='',
-    x=-350,
-    y=280,
+    x=LEFT_BRD + 50,
+    y=UP_BRD + SIZE //2,
     angle=0,
     font=None,
     font_size=45,
@@ -48,8 +46,8 @@ player_name = play.new_text(
     transparency=100)
 
 
-gameover_pic = play.new_image(image="gameover.jpeg", x=0, y=0, size=120, angle=0)
-end_text = play.new_text(words='YOU WIN', x=0, y=0, angle=0, font=None,
+gameover_pic = play.new_image(image="gameover.jpeg", x=(RIGHT_BRD + LEFT_BRD)//2, y=-UP_BRD, size=120, angle=0)
+end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD+ LEFT_BRD)//2, y=-UP_BRD, angle=0, font=None,
                         font_size=180, color='green', transparency=100)
 
 all_sprites = [
@@ -64,15 +62,17 @@ all_sprites = [
 
 def start_rules():
     from os import system
-    system("gedit Rules.txt")
+    system("gedit Rules.txt")  # TextEdit
 
+    #import subprocess
+    #subprocess.call(['open', 'gedit', 'Rules.txt'])
 
 def sprite_pos_random(sprite):
     """ Эта функция (подпрограмма) для перемещения спрайта яблоко в случайное положение"""
     flag = True
     while flag:
-        x = play.random_number(lowest=-19, highest=19) * 20
-        y = play.random_number(lowest=-14, highest=13) * 20
+        x = play.random_number(lowest=(LEFT_BRD + SIZE // 2) // SIZE, highest=(RIGHT_BRD - SIZE // 2) // SIZE) * SIZE
+        y = play.random_number(lowest=(DOWN_BRD + SIZE // 2) // SIZE, highest=(UP_BRD - SIZE // 2) // SIZE) * SIZE
         for index in range(0, len(all_sprites)):
             if all_sprites[index].x == x and all_sprites[index].y == y:
                 break
@@ -85,7 +85,7 @@ def sprite_pos_random(sprite):
 def add_boxes(number):
     for n in range(number):
         box = play.new_box(color='orange',
-            x=0, y=0, width=18, height=18,
+            x=0, y=0, width=SIZE - 2, height=SIZE - 2,
             border_color="light blue",
             border_width=1)
         sprite_pos_random(box)
@@ -94,59 +94,42 @@ def add_boxes(number):
 
 def add_apples(number):
     for n in range(number):
-        apple = play.new_image(image="Apple.png", x=0, y=0, size=3, angle=0)
+        apple = play.new_image(image="Apple.png", x=0, y=0, size=8, angle=0)
         sprite_pos_random(apple)
         apples_lst.append(apple)
         all_sprites.append(apple)
 
 def borders_and_lines():
-    for Y in range(-270, 270, 20):
+    for Y in range(DOWN_BRD, UP_BRD, SIZE):
         line = play.new_line(
-            color='lightgreen', x=-390, y=Y, length=780, angle=0, thickness=1,
+            color='lightgreen', x=LEFT_BRD, y=Y, length=RIGHT_BRD - LEFT_BRD, angle=0, thickness=1,
             x1=None, y1=None)
         all_sprites.append(line)
         lines.append(line)
-    for X in range(-370, 390, 20):
+    for X in range(LEFT_BRD, RIGHT_BRD + SIZE, SIZE):
         line = play.new_line(
-            color='lightgreen', x=X,
-            y=270,
-            length=560,
-            angle=-90,
-            thickness=1,
-            x1=None,
-            y1=None)
+            color='lightgreen', x=X, y=UP_BRD, length=UP_BRD - DOWN_BRD, angle=-90, thickness=1,
+            x1=None, y1=None)
         all_sprites.append(line)
         lines.append(line)
     # создаем линии для рамки
     line = play.new_line(
-        color='red',
-        x=LEFT_BRD,
-        y=UP_BRD,
-        length=560,
-        angle=-90,
-        thickness=1,
-        x1=None,
-        y1=None)
-    borders.append(line)
-    all_sprites.append(line)
-    line = play.new_line(
-        color='red',
-        x=RIGHT_BRD,
-        y=UP_BRD,
-        length=560,
-        angle=-90,
-        thickness=1,
-        x1=None,
-        y1=None)
-    borders.append(line)
-    all_sprites.append(line)
-    line = play.new_line(
-        color='red', x=LEFT_BRD, y=UP_BRD, length=780, angle=0, thickness=1,
+        color='red', x=LEFT_BRD, y=UP_BRD, length=UP_BRD - DOWN_BRD, angle=-90, thickness=1,
         x1=None, y1=None)
     borders.append(line)
     all_sprites.append(line)
     line = play.new_line(
-        color='red', x=LEFT_BRD, y=DOWN_BRD, length=780, angle=0, thickness=1,
+        color='red', x=RIGHT_BRD, y=UP_BRD, length=UP_BRD - DOWN_BRD, angle=-90, thickness=1,
+        x1=None, y1=None)
+    borders.append(line)
+    all_sprites.append(line)
+    line = play.new_line(
+        color='red', x=LEFT_BRD, y=UP_BRD, length=RIGHT_BRD - LEFT_BRD, angle=0, thickness=1,
+        x1=None, y1=None)
+    borders.append(line)
+    all_sprites.append(line)
+    line = play.new_line(
+        color='red', x=LEFT_BRD, y=DOWN_BRD, length=RIGHT_BRD - LEFT_BRD, angle=0, thickness=1,
         x1=None, y1=None)
     borders.append(line)
     all_sprites.append(line)
@@ -160,7 +143,7 @@ def remove_from_body():
 
 def add_body_clone():
     body_clone = play.new_image(
-        image="тело.png", x=0, y=0, size=20, angle=90)  # Создаем клон нашего хвоста
+        image="тело.png", x=0, y=0, size=45, angle=90)  # Создаем клон нашего хвоста
     body_clone_list.append(body_clone)  # Добавляем клон в список
     all_sprites.append(body_clone)
     body_clone.hide()
@@ -323,12 +306,12 @@ def game_over():
 def check_stars():
     if apples % 1 == 0:
         # Каждый раз когда получаем звезду смещаем ее вправо
-        new_x = -200 + 30 * len(stars)
+        new_x = LEFT_BRD + SIZE * 6 + SIZE * len(stars)
         star = play.new_image(
             image="star.png",
             x=new_x,
-            y=285,
-            size=2,
+            y=UP_BRD + SIZE //2,
+            size=3,
             angle=0)
         stars.append(star)
         all_sprites.append(star)
@@ -360,7 +343,7 @@ def start():
     start_rules()
 
 
-@play.when_key_pressed('up', 'down', 'right', 'left', 'w', 's', 'a', 'd', 'p', 'h')
+@play.when_key_pressed('w', 's', 'a', 'd', 'p', 'h', 'l')
 async def pres_keys(key):
     def start_rules():
         from os import system
@@ -377,6 +360,8 @@ async def pres_keys(key):
         switch_screen()
     if key == 'h':
         start_rules()
+    if key == 'l':
+        sys.exit(0)
     await play.timer(seconds=0.01)
 
 
@@ -392,7 +377,7 @@ async def do():
         move_bodies_to_new_position()
 
     if run:
-        head.move(20)  # постоянное движение вперед спрайта - head
+        head.move(SIZE)  # постоянное движение вперед спрайта - head
 
     # Условие Проигрыша - выход за рамки
     if head.x >= RIGHT_BRD or head.x <= LEFT_BRD or head.y >= UP_BRD or head.y <= DOWN_BRD:
@@ -507,7 +492,7 @@ async def surprize():
     sprite_pos_random(box)
 
     temp.hide()
-    temp.go_to(400, 400)
+    temp.go_to(-500, -500)
     show_eleksir = False
     await play.timer(seconds=10)
 

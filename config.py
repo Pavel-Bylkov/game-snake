@@ -3,13 +3,14 @@ import pygame
 # play.screen.width = 800
 # play.screen.height = 600
 
-UP_BRD = 270  # Крайня верхняя координата Y
-LEFT_BRD = -390  # Координата X
-RIGHT_BRD = 390  # Координата X
-DOWN_BRD = -290  # Крайня нижняя координата Y
+UP_BRD = 225  # Крайня верхняя координата Y
+LEFT_BRD = -325  # Координата X левая
+RIGHT_BRD = 1425  # Координата X правая
+DOWN_BRD = -725  # Крайня нижняя координата Y
+SIZE = 50  # Размер ячейки сетки
 
-WIN_WIDTH = 800
-WIN_HEIGHT = 600
+WIN_WIDTH = 1920
+WIN_HEIGHT = 1080
 
 def full_screen():
     global screen, state_screen
@@ -29,7 +30,7 @@ def switch_screen():
     else:
         normal_screen()
 
-normal_screen()
+full_screen()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
 FONT = pygame.font.Font(None, 32)
