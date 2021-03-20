@@ -48,6 +48,7 @@ speed = STARTSPEED
 is_elecsir = False
 show_eleksir = False
 apples = 0
+help_text = 'W - turn up   A - turn left   S - turn down   D - turn right   H - help   P - pause   L - exit'
 
 body_clone_list = []  # создаем список пустой, в который потом будем добавлять клоны хвоста
 bodies_positions = []  # здесь будем хранить координаты каждого клона хвоста

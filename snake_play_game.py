@@ -14,8 +14,6 @@ from shifrovka import shifr, deshifr
 
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
 # ToDo 3 Разбить игру на файлы для удобства чтения
-# Todo Найти решение переключиться на полный экран
-
 
 head = play.new_image(image="голова.png", x=0, y=0, size=25, angle=90)
 elecsir_speed = play.new_box(color='light green', x=0, y=0,
@@ -34,7 +32,9 @@ gameover_pic = play.new_image(image="gameover.jpeg",
                               x=(RIGHT_BRD + LEFT_BRD)//2, y=-UP_BRD, size=120, angle=0)
 end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD+ LEFT_BRD)//2, y=-UP_BRD, angle=0,
                          font=None, font_size=180, color='green', transparency=100)
-
+help_text = play.new_text(words='Control:  ' + help_text,
+                          x=(RIGHT_BRD+ LEFT_BRD)//2, y=DOWN_BRD - 25, angle=0,
+                          font=None, font_size=50, color='green', transparency=100)
 all_sprites = [
     head,
     score,
@@ -333,6 +333,7 @@ async def pres_keys(key):
     def start_rules():
         from os import system
         system("gedit Rules.txt")
+    global pause
     if key == 'up' or key == 'w':
         head.angle = 90
     if key == 'down' or key == 's':
@@ -342,7 +343,12 @@ async def pres_keys(key):
     if key == 'left' or key == 'a':
         head.angle = 180
     if key == 'p':
-        switch_screen()
+        if pause:
+            pause = False
+            pygame.mixer.music.play()
+        else:
+            pause = True
+            pygame.mixer.music.stop()
     if key == 'h':
         start_rules()
     if key == 'l':
@@ -355,104 +361,105 @@ async def do():
     # разрешаем редактировать глобальную переменную внутри функции
     global apples, head, speed, run, curent_speed, is_elecsir
     global show_eleksir
+    if not pause:
+        # Условие для перемещения хвоста
+        if len(body_clone_list):
+            update_bodies_position()
+            move_bodies_to_new_position()
 
-    # Условие для перемещения хвоста
-    if len(body_clone_list):
-        update_bodies_position()
-        move_bodies_to_new_position()
+        if run:
+            head.move(SIZE)  # постоянное движение вперед спрайта - head
 
-    if run:
-        head.move(SIZE)  # постоянное движение вперед спрайта - head
+        # Условие Проигрыша - выход за рамки
+        if (head.x >= RIGHT_BRD or head.x <= LEFT_BRD
+                or head.y >= UP_BRD or head.y <= DOWN_BRD):
+            head.x, head.y = 0, 0
+            run = game_over()
+            await play.timer(seconds=2)
+            show_hall_winners()
+            await play.timer(seconds=10)
+            sys.exit(0)
 
-    # Условие Проигрыша - выход за рамки
-    if head.x >= RIGHT_BRD or head.x <= LEFT_BRD or head.y >= UP_BRD or head.y <= DOWN_BRD:
-        head.x, head.y = 0, 0
-        run = game_over()
-        await play.timer(seconds=2)
-        show_hall_winners()
-        await play.timer(seconds=10)
-        sys.exit(0)
+        # Условие Победы
+        if len(stars) == 10:
+            run = end_game()
+            await play.timer(seconds=3)
+            show_hall_winners()
+            await play.timer(seconds=10)
+            sys.exit(0)
 
-    # Условие Победы
-    if len(stars) == 10:
-        run = end_game()
-        await play.timer(seconds=3)
-        show_hall_winners()
-        await play.timer(seconds=10)
-        sys.exit(0)
+        # Условие касания яблока
+        for apple in apples_lst:
+            if head.is_touching(apple):
+                apples = apples + 1
+                check_stars()  # Проверяем нужно добавлять и показывать звезды
+                # для отображения кол-ва съеденных яблок на экране
+                score.words = str(apples)
+                sprite_pos_random(apple)
+                sound_eat.play()
+                add_body_clone()
+                # ускорение движения змейки
+                speed -= 0.001
 
-    # Условие касания яблока
-    for apple in apples_lst:
-        if head.is_touching(apple):
-            apples = apples + 1
-            check_stars()  # Проверяем нужно добавлять и показывать звезды
-            # для отображения кол-ва съеденных яблок на экране
-            score.words = str(apples)
-            sprite_pos_random(apple)
+        # Условие касания элексира
+        if show_eleksir and head.is_touching(elecsir_slow):
+            show_eleksir = False
+            is_elecsir = True
+            elecsir_slow.hide()
             sound_eat.play()
-            add_body_clone()
+            # Замедление движения змейки
+            curent_speed = speed
+            speed += 0.2
+
+        if show_eleksir and head.is_touching(elecsir_speed):
+            show_eleksir = False
+            elecsir_speed.hide()
+            is_elecsir = True
+            sound_eat.play()
             # ускорение движения змейки
-            speed -= 0.001
+            curent_speed = speed
+            speed -= 0.2
 
-    # Условие касания элексира
-    if show_eleksir and head.is_touching(elecsir_slow):
-        show_eleksir = False
-        is_elecsir = True
-        elecsir_slow.hide()
-        sound_eat.play()
-        # Замедление движения змейки
-        curent_speed = speed
-        speed += 0.2
+        # Условие Проигрыша - касания хвоста
+        for body_clone in body_clone_list:
+            if head.is_touching(body_clone):
+                run = game_over()
+                await play.timer(seconds=2)
+                show_hall_winners()
+                await play.timer(seconds=10)
+                sys.exit(0)
 
-    if show_eleksir and head.is_touching(elecsir_speed):
-        show_eleksir = False
-        elecsir_speed.hide()
-        is_elecsir = True
-        sound_eat.play()
-        # ускорение движения змейки
-        curent_speed = speed
-        speed -= 0.2
+        # Условие касания boxes
+        for box in box_list:
+            # проверяем касание и длину хвоста - если его нет, Поражение
+            if head.is_touching(box) and len(body_clone_list) == 0:
+                run = game_over()
+                await play.timer(seconds=2)
+                show_hall_winners()
+                await play.timer(seconds=10)
+                sys.exit(0)
+            if head.is_touching(box):
+                apples = apples - 1
+                score.words = str(apples)
+                sound_eat.play()
+                remove_from_body()
+                sprite_pos_random(box)
 
-    # Условие Проигрыша - касания хвоста
-    for body_clone in body_clone_list:
-        if head.is_touching(body_clone):
-            run = game_over()
-            await play.timer(seconds=2)
-            show_hall_winners()
-            await play.timer(seconds=10)
-            sys.exit(0)
-
-    # Условие касания boxes
-    for box in box_list:
-        # проверяем касание и длину хвоста - если его нет, Поражение
-        if head.is_touching(box) and len(body_clone_list) == 0:
-            run = game_over()
-            await play.timer(seconds=2)
-            show_hall_winners()
-            await play.timer(seconds=10)
-            sys.exit(0)
-        if head.is_touching(box):
-            apples = apples - 1
-            score.words = str(apples)
-            sound_eat.play()
-            remove_from_body()
-            sprite_pos_random(box)
-
-    # пауза между шагами - для создания эффекта сокрости
-    await play.timer(seconds=speed)
+        # пауза между шагами - для создания эффекта сокрости
+        await play.timer(seconds=speed)
 
 
 # для повтора фоновой мелодии
 @play.repeat_forever
 async def music_play():
-    pygame.mixer.music.play()
-    await play.timer(seconds=194)
-
+    if not pause:
+        pygame.mixer.music.play()
+        await play.timer(seconds=194)
 
 @play.repeat_forever
 async def return_speed():
     global speed, curent_speed, is_elecsir
-    if is_elecsir:
+    if not pause and is_elecsir:
         is_elecsir = False
         await play.timer(seconds=10)
         speed = curent_speed
@@ -461,24 +468,24 @@ async def return_speed():
 @play.repeat_forever
 async def surprize():
     global show_eleksir
+    if not pause:
+        await play.timer(seconds=1)
+        if play.random_number(lowest=0, highest=1) > 0:
+            temp = elecsir_speed
+        else:
+            temp = elecsir_slow
+        sprite_pos_random(temp)
+        temp.show()
+        show_eleksir = True
+        await play.timer(seconds=20)
 
-    await play.timer(seconds=1)
-    if play.random_number(lowest=0, highest=1) > 0:
-        temp = elecsir_speed
-    else:
-        temp = elecsir_slow
-    sprite_pos_random(temp)
-    temp.show()
-    show_eleksir = True
-    await play.timer(seconds=20)
+        # случайное место препятствия
+        box = choice(box_list)
+        sprite_pos_random(box)
 
-    # случайное место препятствия
-    box = choice(box_list)
-    sprite_pos_random(box)
-
-    temp.hide()
-    temp.go_to(-500, -500)
-    show_eleksir = False
-    await play.timer(seconds=10)
+        temp.hide()
+        temp.go_to(-500, -500)
+        show_eleksir = False
+        await play.timer(seconds=10)
 
 play.start_program()
