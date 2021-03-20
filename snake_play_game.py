@@ -18,37 +18,22 @@ from shifrovka import shifr, deshifr
 
 
 head = play.new_image(image="голова.png", x=0, y=0, size=25, angle=90)
-elecsir_speed = play.new_box(color='light green',
-            x=0, y=0, width=SIZE - 2, height=SIZE - 2,
-            border_color="light blue",
-            border_width=1)
-elecsir_slow = play.new_box(color='red',
-            x=0, y=0, width=SIZE - 2, height=SIZE - 2,
-            border_color="light blue",
-            border_width=1)
-score = play.new_text(
-    words='',
-    x=RIGHT_BRD - 100,
-    y=UP_BRD + SIZE //2,
-    angle=0,
-    font=None,
-    font_size=50,
-    color='white',
-    transparency=100)
-player_name = play.new_text(
-    words='',
-    x=LEFT_BRD + 50,
-    y=UP_BRD + SIZE //2,
-    angle=0,
-    font=None,
-    font_size=45,
-    color='white',
-    transparency=100)
-
-
-gameover_pic = play.new_image(image="gameover.jpeg", x=(RIGHT_BRD + LEFT_BRD)//2, y=-UP_BRD, size=120, angle=0)
-end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD+ LEFT_BRD)//2, y=-UP_BRD, angle=0, font=None,
-                        font_size=180, color='green', transparency=100)
+elecsir_speed = play.new_box(color='light green', x=0, y=0,
+                             width=SIZE - 2, height=SIZE - 2,
+                             border_color="light blue", border_width=1)
+elecsir_slow = play.new_box(color='red', x=0, y=0,
+                            width=SIZE - 2, height=SIZE - 2,
+                            border_color="light blue", border_width=1)
+score = play.new_text(words='',
+                      x=RIGHT_BRD - 100, y=UP_BRD + SIZE //2, angle=0,
+                      font=None, font_size=50, color='white', transparency=100)
+player_name = play.new_text(words='',
+                            x=LEFT_BRD + 50, y=UP_BRD + SIZE //2, angle=0,
+                            font=None, font_size=45, color='white', transparency=100)
+gameover_pic = play.new_image(image="gameover.jpeg",
+                              x=(RIGHT_BRD + LEFT_BRD)//2, y=-UP_BRD, size=120, angle=0)
+end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD+ LEFT_BRD)//2, y=-UP_BRD, angle=0,
+                         font=None, font_size=180, color='green', transparency=100)
 
 all_sprites = [
     head,
