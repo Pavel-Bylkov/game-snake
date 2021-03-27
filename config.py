@@ -49,7 +49,8 @@ is_elecsir = False
 show_eleksir = False
 apples = 0
 help_text = 'W - turn up   A - turn left   S - turn down   D - turn right   H - help   P - pause   L - exit'
-
+help_text2 = 'SPACE - show holl winners  L - exit'
+handle = None
 body_clone_list = []  # создаем список пустой, в который потом будем добавлять клоны хвоста
 bodies_positions = []  # здесь будем хранить координаты каждого клона хвоста
 box_list = []  # список с препятствиями

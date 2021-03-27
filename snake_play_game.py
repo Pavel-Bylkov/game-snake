@@ -23,34 +23,30 @@ elecsir_slow = play.new_box(color='red', x=0, y=0,
                             width=SIZE - 2, height=SIZE - 2,
                             border_color="light blue", border_width=1)
 score = play.new_text(words='',
-                      x=RIGHT_BRD - 100, y=UP_BRD + SIZE //2, angle=0,
+                      x=RIGHT_BRD - 100, y=UP_BRD + SIZE // 2, angle=0,
                       font=None, font_size=50, color='white', transparency=100)
 player_name = play.new_text(words='',
-                            x=LEFT_BRD + 50, y=UP_BRD + SIZE //2, angle=0,
+                            x=LEFT_BRD + 50, y=UP_BRD + SIZE // 2, angle=0,
                             font=None, font_size=45, color='white', transparency=100)
 gameover_pic = play.new_image(image="gameover.jpeg",
-                              x=(RIGHT_BRD + LEFT_BRD)//2, y=-UP_BRD, size=120, angle=0)
-end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD+ LEFT_BRD)//2, y=-UP_BRD, angle=0,
+                              x=(RIGHT_BRD + LEFT_BRD) // 2, y=-UP_BRD, size=120, angle=0)
+end_text = play.new_text(words='YOU WIN', x=(RIGHT_BRD + LEFT_BRD) // 2, y=-UP_BRD, angle=0,
                          font=None, font_size=180, color='green', transparency=100)
+pause_text = play.new_text(words='PAUSE', x=(RIGHT_BRD + LEFT_BRD) // 2, y=-UP_BRD, angle=0,
+                         font=None, font_size=180, color='yellow', transparency=100)
 help_text = play.new_text(words='Control:  ' + help_text,
                           x=(RIGHT_BRD+ LEFT_BRD)//2, y=DOWN_BRD - 25, angle=0,
-                          font=None, font_size=50, color='green', transparency=100)
-all_sprites = [
-    head,
-    score,
-    end_text,
-    player_name,
-    gameover_pic,
-    elecsir_speed,
-    elecsir_slow]
+                          font=None, font_size=50, color='blue', transparency=100)
+all_sprites = [pause_text,
+    head, score, end_text, player_name, gameover_pic, elecsir_speed, elecsir_slow]
 
 
 def start_rules():
-    from os import system
-    system("gedit Rules.txt")  # TextEdit
+    #from os import system
+    #system("gedit Rules.txt")  #  for linux
 
-    #import subprocess
-    #subprocess.call(['open', 'gedit', 'Rules.txt'])
+    from subprocess import call
+    call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
 
 def sprite_pos_random(sprite):
     """ Эта функция (подпрограмма) для перемещения спрайта яблоко в случайное положение"""
@@ -124,7 +120,6 @@ def remove_from_body():
         body = body_clone_list.pop()
         all_sprites.remove(body)
         body.remove()
-        body = None
 
 def add_body_clone():
     body_clone = play.new_image(
@@ -132,7 +127,6 @@ def add_body_clone():
     body_clone_list.append(body_clone)  # Добавляем клон в список
     all_sprites.append(body_clone)
     body_clone.hide()
-    body_clone = None
 
 def update_bodies_position():
     bodies_positions.clear()
@@ -213,13 +207,8 @@ def show_winners(winners):
     list_winners = [
         play.new_text(
             words=f'{"№"}  {"ИМЯ ИГРОКА".center(30)} {"ОЧКИ"}',
-            x=-100,
-            y=170,
-            angle=0,
-            font=None,
-            font_size=30,
-            color='gold',
-            transparency=100)]
+            x=-100, y=170, angle=0, font=None, font_size=30,
+            color='gold', transparency=100)]
     sorted_winners = list(winners.items())
     sorted_winners.sort(key=lambda i: i[1])
     sorted_winners = sorted_winners[::-1]
@@ -228,23 +217,13 @@ def show_winners(winners):
             win = play.new_text(
                 words=f'{i:02} {sorted_winners[i - 1][0].ljust(30,".")}'
                 f' {sorted_winners[i - 1][1]:04}',
-                x=-100,
-                y=140 - i * 30,
-                angle=0,
-                font=None,
-                font_size=30,
-                color='gold',
-                transparency=100)
+                x=-100, y=140 - i * 30, angle=0,
+                font=None, font_size=30, color='gold', transparency=100)
         else:
             win = play.new_text(
                 words=f'{i:02} {" "*30} {" "*4}',
-                x=-100,
-                y=140 - i * 30,
-                angle=0,
-                font=None,
-                font_size=30,
-                color='gold',
-                transparency=100)
+                x=-100, y=140 - i * 30, angle=0,
+                font=None, font_size=30, color='gold', transparency=100)
         list_winners.append(win)
 
 
@@ -253,49 +232,39 @@ def show_hall_winners():
     for sprite in all_sprites:
         sprite.hide()
     handle = play.new_text(
-        words='Лучшие результаты',
-        x=-100,
-        y=200,
-        angle=0,
-        font=None,
-        font_size=45,
-        color='gold',
-        transparency=100)
+        words='Лучшие результаты', x=-100, y=200, angle=0,
+        font=None, font_size=45, color='gold', transparency=100)
     winners = get_winners()  # Читаем файл с победителями
     winners = setWinner(winners)
     save_winners(winners)
     show_winners(winners)
     your_score = play.new_text(
         words="Ваш текущий результат: " +
-        player_name.words +
-        " - " +
-        score.words,
-        x=-
-        100,
-        y=-
-        250,
-        angle=0,
-        font=None,
-        font_size=30,
-        color='red',
+        player_name.words + " - " + score.words,
+        x=-100, y=-250, angle=0, font=None, font_size=30, color='red',
         transparency=100)
 
 
 def game_over():
     pygame.mixer.music.stop()
     gameover_pic.show()
+    help_text.words = 'Control:  ' + help_text2
+    for apple in apples_lst:
+        apple.hide()
+    for box in box_list:
+        box.hide()
     sound_game_over.play()
     return False
 
 
 def check_stars():
-    if apples % 1 == 0:
+    if apples % 10 == 0:
         # Каждый раз когда получаем звезду смещаем ее вправо
         new_x = LEFT_BRD + SIZE * 6 + SIZE * len(stars)
         star = play.new_image(
             image="star.png",
             x=new_x,
-            y=UP_BRD + SIZE //2,
+            y=UP_BRD + SIZE // 2,
             size=3,
             angle=0)
         stars.append(star)
@@ -316,6 +285,7 @@ player_name.words = input_text()
 @play.when_program_starts
 def start():
     gameover_pic.hide()
+    pause_text.hide()
     end_text.hide()
     elecsir_speed.hide()
     elecsir_slow.hide()
@@ -328,11 +298,13 @@ def start():
     start_rules()
 
 
-@play.when_key_pressed('w', 's', 'a', 'd', 'p', 'h', 'l')
+@play.when_key_pressed('w', 's', 'a', 'd', 'p', 'h', 'l', 'space')
 async def pres_keys(key):
     def start_rules():
-        from os import system
-        system("gedit Rules.txt")
+        from subprocess import call
+        call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
+        #from os import system
+        #system("gedit Rules.txt")
     global pause
     if key == 'up' or key == 'w':
         head.angle = 90
@@ -345,10 +317,14 @@ async def pres_keys(key):
     if key == 'p':
         if pause:
             pause = False
+            pause_text.hide()
             pygame.mixer.music.play()
         else:
             pause = True
+            pause_text.show()
             pygame.mixer.music.stop()
+    if key == 'space':
+        show_hall_winners()
     if key == 'h':
         start_rules()
     if key == 'l':
@@ -361,7 +337,7 @@ async def do():
     # разрешаем редактировать глобальную переменную внутри функции
     global apples, head, speed, run, curent_speed, is_elecsir
     global show_eleksir
-    if not pause:
+    if not pause and run:
         # Условие для перемещения хвоста
         if len(body_clone_list):
             update_bodies_position()
@@ -375,13 +351,9 @@ async def do():
                 or head.y >= UP_BRD or head.y <= DOWN_BRD):
             head.x, head.y = 0, 0
             run = game_over()
-            await play.timer(seconds=2)
-            show_hall_winners()
-            await play.timer(seconds=10)
-            sys.exit(0)
 
         # Условие Победы
-        if len(stars) == 10:
+        if len(stars) == 15:
             run = end_game()
             await play.timer(seconds=3)
             show_hall_winners()
@@ -447,19 +419,22 @@ async def do():
 
         # пауза между шагами - для создания эффекта сокрости
         await play.timer(seconds=speed)
+    else:
+        pause_text.show()
+        await play.timer(seconds=0.01)
 
 
 # для повтора фоновой мелодии
 @play.repeat_forever
 async def music_play():
-    if not pause:
+    if not pause and run:
         pygame.mixer.music.play()
         await play.timer(seconds=194)
 
 @play.repeat_forever
 async def return_speed():
     global speed, curent_speed, is_elecsir
-    if not pause and is_elecsir:
+    if not pause and is_elecsir and run:
         is_elecsir = False
         await play.timer(seconds=10)
         speed = curent_speed
@@ -468,7 +443,7 @@ async def return_speed():
 @play.repeat_forever
 async def surprize():
     global show_eleksir
-    if not pause:
+    if not pause and run:
         await play.timer(seconds=1)
         if play.random_number(lowest=0, highest=1) > 0:
             temp = elecsir_speed
