@@ -15,7 +15,7 @@ from shifrovka import shifr, deshifr
 # pip3 install replit-play - сразу устанавливает и библиотеку play и pygame
 # ToDo 3 Разбить игру на файлы для удобства чтения
 
-head = play.new_image(image="голова.png", x=0, y=0, size=25, angle=90)
+head = play.new_image(image="голова.png", x=0, y=0, size=20, angle=90)
 elecsir_speed = play.new_box(color='light green', x=0, y=0,
                              width=SIZE - 2, height=SIZE - 2,
                              border_color="light blue", border_width=1)
@@ -42,11 +42,11 @@ all_sprites = [pause_text,
 
 
 def start_rules():
-    #from os import system
-    #system("gedit Rules.txt")  #  for linux
+    from os import system
+    system("gedit Rules.txt")  # for linux
 
-    from subprocess import call
-    call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
+    #from subprocess import call
+    #call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
 
 def sprite_pos_random(sprite):
     """ Эта функция (подпрограмма) для перемещения спрайта яблоко в случайное положение"""
@@ -301,18 +301,18 @@ def start():
 @play.when_key_pressed('w', 's', 'a', 'd', 'p', 'h', 'l', 'space')
 async def pres_keys(key):
     def start_rules():
-        from subprocess import call
-        call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
-        #from os import system
-        #system("gedit Rules.txt")
+        #from subprocess import call
+        #call(['open', '-a', 'TextEdit', 'Rules.txt'])  # for mac
+        from os import system
+        system("gedit Rules.txt")
     global pause
-    if key == 'up' or key == 'w':
+    if (key == 'up' or key == 'w') and head.angle != -90:
         head.angle = 90
-    if key == 'down' or key == 's':
+    if (key == 'down' or key == 's') and head.angle != 90:
         head.angle = -90
-    if key == 'right' or key == 'd':
+    if (key == 'right' or key == 'd') and head.angle != 180:
         head.angle = 0
-    if key == 'left' or key == 'a':
+    if (key == 'left' or key == 'a') and head.angle != 0:
         head.angle = 180
     if key == 'p':
         if pause:
@@ -349,7 +349,7 @@ async def do():
         # Условие Проигрыша - выход за рамки
         if (head.x >= RIGHT_BRD or head.x <= LEFT_BRD
                 or head.y >= UP_BRD or head.y <= DOWN_BRD):
-            head.x, head.y = 0, 0
+            head.x, head.y = (RIGHT_BRD + LEFT_BRD) // 2, -UP_BRD
             run = game_over()
 
         # Условие Победы
